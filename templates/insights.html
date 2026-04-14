@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Feature Insights | India Property AI{% endblock %}
+
+{% block extra_head %}
+<style>
+    .header h1 i { color: #5bc0be; }
+    .insights-container { background: #fff; padding: 2rem; border-radius: 1.5rem; }
+    .insights-description {
+        margin-bottom: 2rem; font-size: 1.1rem; color: #4b6584; line-height: 1.6;
+    }
+    .chart-container { position: relative; height: 60vh; width: 100%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1><i class="fas fa-chart-bar"></i> Feature Insights</h1>
+    <div class="subhead">
+        <span>Understanding exactly what drives house prices using the {{ best_model }} algorithm.</span>
+    </div>
+</div>
+
+<div class="content">
+    <div class="insights-container">
+        <p class="insights-description">
+            The chart below shows the <strong>Feature Importances</strong> calculated mathematically by our AI. 
+            A higher percentage means that specific feature has a massive impact on the final pricing outcome of a house.
+        </p>
+        <div class="chart-container">
+            <canvas id="importanceChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script id="data-features" type="application/json">
+    {{ features|tojson|safe }}
+</script>
+<script id="data-importances" type="application/json">
+    {{ importances|tojson|safe }}
+</script>
+<script>
+    const ctx = document.getElementById('importanceChart').getContext('2d');
+    const insightsLabels = JSON.parse(document.getElementById('data-features').textContent);
+    const insightsData = JSON.parse(document.getElementById('data-importances').textContent);
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: insightsLabels,
+            datasets: [{
+                label: 'Relative Importance (%)',
+                data: insightsData,
+                backgroundColor: 'rgba(58, 124, 165, 0.7)',
+                borderColor: 'rgba(58, 124, 165, 1)',
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Importance %', font: { weight: 'bold' } }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
